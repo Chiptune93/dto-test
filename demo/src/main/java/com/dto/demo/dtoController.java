@@ -6,6 +6,7 @@ import com.dto.demo.service.dtoService;
 import com.dto.demo.service.mapService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,12 +21,22 @@ public class dtoController {
 
     @GetMapping(value = "/ds")
     public testDto dsTest() {
-        return ds.getData();
+        StopWatch s = new StopWatch();
+        s.start("dto class test");
+        testDto result = ds.getData();
+        s.stop();
+        System.out.println(s.prettyPrint());
+        return result;
     }
 
     @GetMapping(value = "/ms")
     public map msTest() {
-        return ms.getData();
+        StopWatch s = new StopWatch();
+        s.start("map test");
+        map result = ms.getData();
+        s.stop();
+        System.out.println(s.prettyPrint());
+        return result;
     }
 
 }

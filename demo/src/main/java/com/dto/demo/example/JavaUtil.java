@@ -4,30 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.UUID;
-import net.sf.json.JSONArray;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.ss.usermodel.Cell;
-import syworks.lib.myMap.MyCamelMap;
-import syworks.lib.myMap.MyMap;
 
 public class JavaUtil {
     /**
@@ -272,14 +256,6 @@ public class JavaUtil {
     public static int inArray(String[] arr1, String[] arr2) {
         for (int i = 0; i < arr2.length; i++) {
             if (inArray(arr1, arr2[i]) != -1)
-                return i;
-        }
-        return -1;
-    }
-
-    public static int inArray(JSONArray arr1, String arr2) {
-        for (int i = 0; i < arr1.size(); i++) {
-            if (JavaUtil.NVL(arr1.get(i), "").equals(arr2))
                 return i;
         }
         return -1;
@@ -542,36 +518,6 @@ public class JavaUtil {
         return tmp.toString();
     }
 
-    /**
-     * MD5 암호화(MYSQL,PHP 와 동일값)
-     *
-     * @param 문자열
-     * @return 암호화 문자
-     */
-    public static String md5Encoding(String password) {
-        try {
-            return org.apache.commons.codec.digest.DigestUtils.md5Hex(password);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static String base64Encode(String str) {
-        try {
-            return new String(Base64.encodeBase64(str.getBytes("UTF-8")), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-        }
-        return "";
-    }
-
-    public static String base64Decode(String str) {
-        try {
-            return new String(Base64.decodeBase64(str.getBytes("UTF-8")), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-        }
-        return "";
-    }
-
     public static String hexCode(String inputValue) {
         MessageDigest md5 = null;
         try {
@@ -717,57 +663,6 @@ public class JavaUtil {
         return r_val;
     }
 
-    public static MyMap calendarInfo(Date date) {
-        MyMap returnInfo = new MyMap();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH) + 1;
-        cal.set(Calendar.DATE, 1);
-        int day = (month * 9 - month * 9 % 8) / 8 % 2;
-        if (month != 2) {
-            day += 30;
-        } else if ((year % 400 == 0) || (year % 4 == 0) && (year % 100 != 0)) {
-            day += 29;
-        } else {
-            day += 28;
-        }
-        returnInfo.put("year", year);
-        returnInfo.put("month", month);
-        returnInfo.put("lastDay", day);
-        returnInfo.put("firstWeek", cal.get(Calendar.DAY_OF_WEEK));
-        return returnInfo;
-    }
-
-    public static List<MyMap> calendarBetweenInfo(Date startDate, Date endDate) {
-        List<MyMap> returnInfo = new ArrayList<MyMap>();
-        MyMap dateInfo = null;
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(startDate);
-        cal.set(Calendar.DATE, 1);
-        while (cal.getTime().compareTo(endDate) < 1) {
-            int year = cal.get(Calendar.YEAR);
-            int month = cal.get(Calendar.MONTH) + 1;
-            int day = (month * 9 - month * 9 % 8) / 8 % 2;
-            if (month != 2) {
-                day += 30;
-            } else if ((year % 400 == 0) || (year % 4 == 0) && (year % 100 != 0)) {
-                day += 29;
-            } else {
-                day += 28;
-            }
-            dateInfo = new MyMap();
-            dateInfo.put("year", year);
-            dateInfo.put("month", String.format("%02d", month));
-            dateInfo.put("lastDay", String.format("%02d", day));
-            dateInfo.put("totalDay", String.format("%02d", day + (cal.get(Calendar.DAY_OF_WEEK) - 1)));
-            dateInfo.put("firstWeek", String.format("%02d", cal.get(Calendar.DAY_OF_WEEK)));
-            returnInfo.add(dateInfo);
-            cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 1);
-        }
-        return returnInfo;
-    }
-
     /**
      * 문자형에 오늘 날자리턴
      *
@@ -859,153 +754,6 @@ public class JavaUtil {
             returnString += "*";
         }
         return returnString;
-    }
-
-    public static String cellValueToString(HSSFCell cell) {
-        if (cell == null)
-            return "";
-        String returnStr = "";
-        switch (cell.getCellType()) {
-            case 0:
-                returnStr = JavaUtil.toString(new DecimalFormat("#,##0").format(cell.getNumericCellValue()))
-                        .replaceAll("\\,", "");
-                break;
-            case 1:
-                returnStr = cell.getStringCellValue();
-                break;
-            case Cell.CELL_TYPE_FORMULA:
-                returnStr = cell.getCellFormula();
-                break;
-            default:
-                returnStr = "";
-        }
-        return returnStr;
-    }
-
-    public static String unixTimestampToStringDate(long date, String type) {
-        DateFormat formatter = new SimpleDateFormat(type);
-        return formatter.format(new Date((long) date * 1000)).toString();
-    }
-
-    public static String constants(String name) {
-        Properties props = ((PropertyConfig) Beans.getBean("globalsProperty")).getProps();
-        return props.getProperty(props.getProperty("ENV") + "." + name);
-    }
-
-    public static MyMap describe(Object obj) {
-        MyMap map = null;
-        try {
-            map = (MyMap) BeanUtils.describe(obj);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return map;
-    }
-
-    public static void populate(Object bean, MyMap properties) {
-        try {
-            BeanUtils.populate(bean, properties);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String camelCaseConverter(String key) {
-        String newColumnName = null;
-        if (key.indexOf("_") == -1) {
-            if (key.matches("(.+)?[A-Z](.+)?") && key.matches("(.+)?[a-z](.+)?"))
-                return key;
-            return key.toLowerCase();
-        } else {
-            StringBuffer sb = new StringBuffer();
-            boolean isFirst = true;
-            StringTokenizer tokenizer = new StringTokenizer(key, "_");
-            while (tokenizer.hasMoreTokens()) {
-                if (isFirst)
-                    sb.append(tokenizer.nextToken().toLowerCase());
-                else {
-                    sb.append(StringUtils.capitalize(tokenizer.nextToken().toLowerCase()));
-                }
-                isFirst = false;
-            }
-            newColumnName = sb.toString();
-        }
-        return newColumnName;
-    }
-
-    /**
-     * 리스트 해당 키값으로 MAP생성
-     */
-    public static MyMap listKeyToMyMapInfo(List<MyMap> list, String key) {
-        MyMap result = new MyMap();
-        for (MyMap map : list) {
-            result.put(JavaUtil.toString(map.get(key)), map);
-        }
-        return result;
-    }
-
-    /**
-     * 리스트 해당 키값으로 MAP생성
-     */
-    public static MyMap listKeyToMyCamelMapInfo(List<MyCamelMap> list, String key) {
-        MyMap result = new MyMap();
-        for (MyCamelMap map : list) {
-            result.put(JavaUtil.toString(map.get(key)), map);
-        }
-        return result;
-    }
-
-    /**
-     * 리스트 해당 키값 List
-     */
-    public static List<String> listKeyToArrayForMyMap(List<MyMap> list, String key) {
-        List<String> result = new ArrayList<String>();
-        for (MyMap map : list) {
-            result.add(JavaUtil.toString(map.get(key)));
-        }
-        return result;
-    }
-
-    public static List<String> listKeyToArrayForMyCamelMap(List<MyCamelMap> list, String key) {
-        List<String> result = new ArrayList<String>();
-        for (MyCamelMap map : list) {
-            result.add(JavaUtil.toString(map.get(key)));
-        }
-        return result;
-    }
-
-    public static List<Integer> betweenList(int s, int e) {
-        List<Integer> result = new ArrayList<Integer>();
-        for (int i = s; i <= e; i++) {
-            result.add(i);
-        }
-        return result;
-    }
-
-    public static MyMap extendsMap(MyMap paramMap, MyMap menuInfo) {
-        for (Entry<Object, Object> e : menuInfo.entrySet()) {
-            paramMap.put(e.getKey(), e.getValue());
-        }
-        return paramMap;
-    }
-
-    /**
-     * 중복되는 키가 있을경우, paramMap의 값을 보호한다.
-     */
-    public static MyMap extendsUniqueMap(MyMap paramMap, MyMap menuInfo) {
-        menuInfo.entrySet();
-        for (Entry<Object, Object> e : menuInfo.entrySet()) {
-            if (!paramMap.containsKey(e.getKey())) {
-                paramMap.put(e.getKey(), e.getValue());
-            }
-        }
-        return paramMap;
     }
 
     public static String dateDay(String strDate) {
