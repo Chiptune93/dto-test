@@ -1,8 +1,11 @@
 package com.dto.demo.service;
 
-import com.dto.demo.lib.map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
+
+import com.dto.demo.lib.map;
 
 @Service
 public class mapService {
@@ -24,5 +27,17 @@ public class mapService {
         m.put("info19", "info19");
         m.put("info20", "info20");
         return m;
+    }
+
+    public List<map> getList() {
+        List<map> result = new ArrayList<map>();
+        for (int i = 0; i < 100000; i++) {
+            map m = new map();
+            m.put("id", "test" + i);
+            m.put("name", "test" + i);
+            m.put("email", "test" + i + "@test.com");
+            result.add(m);
+        }
+        return result;
     }
 }
